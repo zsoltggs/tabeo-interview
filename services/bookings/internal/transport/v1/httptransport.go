@@ -5,16 +5,19 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zsoltggs/tabeo-interview/services/users/internal/transport"
-	"github.com/zsoltggs/tabeo-interview/services/users/internal/transport/v1/healthhttp"
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/transport/v1/bookingshttp"
+
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/transport"
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/transport/v1/healthhttp"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )
 
 type httpTransport struct {
-	httpServer *http.Server
-	healthSvc  healthhttp.HealthHTTP
+	httpServer  *http.Server
+	healthSvc   healthhttp.HealthHTTP
+	bookingsSvc bookingshttp.BookingsHTTP
 }
 
 func NewHTTP(healthSvc healthhttp.HealthHTTP) transport.Transport {
@@ -30,6 +33,12 @@ func (h *httpTransport) Serve(httpPort int) error {
 	router := mux.NewRouter()
 	router.HandleFunc("/health", h.healthSvc.HttpHandler).
 		Methods("GET")
+	router.HandleFunc("/bookings", h.bookingsSvc.ListBookings).
+		Methods("GET") // TODO Set up path params
+	router.HandleFunc("/bookings", h.bookingsSvc.CreateBooking).
+		Methods("POST")
+	router.HandleFunc("/bookings", h.bookingsSvc.DeleteBooking).
+		Methods("DELETE") // TODO Set up path params
 	h.httpServer.Addr = port
 	h.httpServer.Handler = router
 	go func() {

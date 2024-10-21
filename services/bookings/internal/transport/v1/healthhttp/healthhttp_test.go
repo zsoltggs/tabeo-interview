@@ -7,11 +7,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/zsoltggs/tabeo-interview/services/users/internal/mocks"
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/mocks"
 	"go.uber.org/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/zsoltggs/tabeo-interview/services/users/pkg/usershttp"
+	"github.com/zsoltggs/tabeo-interview/services/bookings/pkg/usershttp"
 )
 
 func Test_Health(t *testing.T) {

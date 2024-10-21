@@ -3,7 +3,7 @@ services:
   users:
     depends_on: [ zs-mongo ]
     image: users:local
-    container_name: users
+    container_name: bookings
     ports:
       - 9999:8080
     environment:
