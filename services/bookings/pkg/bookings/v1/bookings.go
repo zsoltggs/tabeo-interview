@@ -4,7 +4,7 @@ type CreateBookingRequest struct {
 	FirstName     string `json:"first_name"`
 	LastName      string `json:"last_name"`
 	Gender        string `json:"gender"`
-	BirthDay      string `json:"birthday"`
+	Birthday      string `json:"birthday"`
 	LaunchPadID   string `json:"launch_pad_id"`
 	DestinationID string `json:"destination_id"`
 	LaunchDate    string `json:"launch_date"`

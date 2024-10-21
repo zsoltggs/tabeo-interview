@@ -12,7 +12,7 @@ type Booking struct {
 	FirstName string    `json:"first_name"`
 	LastName  string    `json:"last_name"`
 	Gender    string    `json:"gender"`
-	BirthDay  time.Time `json:"birth_day"`
+	Birthday  time.Time `json:"birthday"`
 
 	LaunchPadID   string    `json:"launch_pad_id"`
 	DestinationID string    `json:"destination_id"`

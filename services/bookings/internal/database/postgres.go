@@ -9,7 +9,7 @@ import (
 	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/models"
 )
 
-type postgres struct {
+type pg struct {
 	Pool *pgxpool.Pool
 }
 
@@ -25,30 +25,30 @@ func NewPostgres(ctx context.Context, connectionStr string) (Database, error) {
 		return nil, fmt.Errorf("unable to ping database: %w", err)
 	}
 
-	return &postgres{Pool: pool}, nil
+	return &pg{Pool: pool}, nil
 }
 
-func (p postgres) Create(ctx context.Context, user models.Booking) error {
+func (p *pg) Create(ctx context.Context, user models.Booking) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (p postgres) Delete(ctx context.Context, id string) error {
+func (p *pg) Delete(ctx context.Context, id string) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (p postgres) GetByID(ctx context.Context, id string) (*models.Booking, error) {
+func (p pg) GetByID(ctx context.Context, id string) (*models.Booking, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (p postgres) List(ctx context.Context, pagination models.Pagination, filters models.Filters) ([]models.Booking, error) {
+func (p pg) List(ctx context.Context, pagination models.Pagination, filters models.Filters) ([]models.Booking, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (p postgres) Health() error {
+func (p pg) Health() error {
 	err := p.Pool.Ping(context.Background())
 	if err != nil {
 		return fmt.Errorf("unable to ping database: %w", err)
@@ -56,7 +56,7 @@ func (p postgres) Health() error {
 	return nil
 }
 
-func (p postgres) Close(ctx context.Context) {
+func (p pg) Close(ctx context.Context) {
 	//TODO implement me
 	panic("implement me")
 }
