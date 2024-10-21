@@ -7,11 +7,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/mocks"
-	"go.uber.org/mock/gomock"
+	bookingsv1 "github.com/zsoltggs/tabeo-interview/services/bookings/pkg/bookings/v1"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/zsoltggs/tabeo-interview/services/bookings/pkg/usershttp"
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/mocks"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_Health(t *testing.T) {
@@ -21,7 +21,7 @@ func Test_Health(t *testing.T) {
 		mockFunc func(mockHealth *mocks.MockHealthCheckable)
 
 		expectedStatusCode int
-		expectedResponse   *usershttp.HealthResponse
+		expectedResponse   *bookingsv1.HealthResponse
 	}{
 		"Invalid http method": {
 			req:                httptest.NewRequest(http.MethodPost, "/health", nil),
@@ -40,7 +40,7 @@ func Test_Health(t *testing.T) {
 				mockHealth.EXPECT().Health().Return(nil)
 			},
 			expectedStatusCode: http.StatusOK,
-			expectedResponse: &usershttp.HealthResponse{
+			expectedResponse: &bookingsv1.HealthResponse{
 				Status: "OK",
 			},
 		},

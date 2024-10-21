@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//go:generate mockgen -package=mocks -destination=../../../mocks/healthhttp.go github.com/zsoltggs/tabeo-interview/services/bookings/internal/transport/bookingsv1/healthhttp HealthCheckable
+//go:generate mockgen -package=mocks -destination=../../../mocks/healthhttp.go github.com/zsoltggs/tabeo-interview/services/bookings/internal/transport/v1/healthhttp HealthCheckable
 type HealthCheckable interface {
 	Health() error
 }
