@@ -62,6 +62,7 @@ func (q *pg) Delete(ctx context.Context, id uuid.UUID) error {
 }
 
 func (q *pg) GetByID(ctx context.Context, id uuid.UUID) (*models.Booking, error) {
+	// TODO Add ErrNotFound
 	booking, err := q.queries.GetBookingByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -132,6 +133,6 @@ func (q *pg) Health() error {
 	return q.pool.Ping(context.Background())
 }
 
-func (q *pg) Close(ctx context.Context) {
+func (q *pg) Close(_ context.Context) {
 	q.pool.Close()
 }

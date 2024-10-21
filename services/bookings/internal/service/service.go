@@ -17,7 +17,7 @@ import (
 type Service interface {
 	CreateBooking(ctx context.Context, createBooking models.CreateBooking) (*models.Booking, error)
 	ListBookings(ctx context.Context, filters models.Filters, pagination models.Pagination) ([]models.Booking, error)
-	DeleteBooking(ctx context.Context, bookingID string) error
+	DeleteBooking(ctx context.Context, bookingID uuid.UUID) error
 }
 
 type service struct {
@@ -75,7 +75,7 @@ func (s *service) ListBookings(ctx context.Context, filters models.Filters, pagi
 	return results, nil
 }
 
-func (s *service) DeleteBooking(ctx context.Context, bookingID string) error {
+func (s *service) DeleteBooking(ctx context.Context, bookingID uuid.UUID) error {
 	err := s.db.Delete(ctx, bookingID)
 	if err != nil {
 		return fmt.Errorf("unable to delete booking: %w", err)
