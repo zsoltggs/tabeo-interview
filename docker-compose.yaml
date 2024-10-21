@@ -1,0 +1,18 @@
+version: "3"
+services:
+  users:
+    depends_on: [ zs-mongo ]
+    image: users:local
+    container_name: users
+    ports:
+      - 9999:8080
+    environment:
+      - REST_PORT=8080
+      - MONGO=mongodb://zs-mongo:27017
+
+  zs-mongo:
+    container_name: zs-mongo
+    image: mongo:4.2
+    ports:
+      - 27017:27017
+    restart: always
