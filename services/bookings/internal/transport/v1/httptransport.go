@@ -20,10 +20,11 @@ type httpTransport struct {
 	bookingsSvc bookingshttp.BookingsHTTP
 }
 
-func NewHTTP(healthSvc healthhttp.HealthHTTP) transport.Transport {
+func NewHTTP(healthSvc healthhttp.HealthHTTP, bookingsSvc bookingshttp.BookingsHTTP) transport.Transport {
 	return &httpTransport{
-		healthSvc:  healthSvc,
-		httpServer: &http.Server{},
+		healthSvc:   healthSvc,
+		bookingsSvc: bookingsSvc,
+		httpServer:  &http.Server{},
 	}
 }
 

@@ -1,18 +1,32 @@
 version: "3"
 services:
-  users:
-    depends_on: [ zs-mongo ]
-    image: users:local
-    container_name: bookings
+  bookings-service:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    image: bookings:local
+    container_name: bookings-service
     ports:
       - 9999:8080
     environment:
       - REST_PORT=8080
-      - MONGO=mongodb://zs-mongo:27017
+      - PG_CONNECTION_STRING=postgres://myuser:mypassword@postgres:5432/bookings?sslmode=disable
 
-  zs-mongo:
-    container_name: zs-mongo
-    image: mongo:4.2
+  postgres:
+    image: postgres:15
+    container_name: bookings_postgres
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: bookings
     ports:
-      - 27017:27017
-    restart: always
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U myuser -d bookings" ]
+      interval: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

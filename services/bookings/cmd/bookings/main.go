@@ -6,6 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/transport/v1/bookingshttp"
+
 	v1 "github.com/zsoltggs/tabeo-interview/services/bookings/internal/transport/v1"
 	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/transport/v1/healthhttp"
 
@@ -17,19 +19,12 @@ import (
 
 func main() {
 	app := cli.App("bookings-service", "bookings service for launchpads")
-	//pgConnStr := app.String(cli.StringOpt{
-	//	Name:   "mongo-connection-string",
-	//	Desc:   "connection string",
-	//	EnvVar: "PG_CONNECTION_STRING",
-	//	Value:  "", // TODO
-	//})
-	//
-	//pgDatabase := app.String(cli.StringOpt{
-	//	Name:   "pg-database",
-	//	Desc:   "database name for pg",
-	//	EnvVar: "PG_DB",
-	//	Value:  "bookings",
-	//})
+	pgConnStr := app.String(cli.StringOpt{
+		Name:   "pg-connection-string",
+		Desc:   "connection string",
+		EnvVar: "PG_CONNECTION_STRING",
+		Value:  "postgres://user:password@localhost:5432/mydb?sslmode=disable",
+	})
 
 	restPort := app.Int(cli.IntOpt{
 		Name:   "rest-port",
@@ -42,15 +37,16 @@ func main() {
 		log.Info("starting server")
 
 		ctx, cancel := context.WithCancel(context.Background())
-		db, err := database.NewPostgres()
+		db, err := database.NewPostgres(ctx, *pgConnStr)
 		if err != nil {
-			log.WithError(err).Panic("unable to connect to mongo")
+			log.WithError(err).Panic("unable to connect to postgres")
 		}
 		defer db.Close(ctx)
 
 		healthSvc := healthhttp.New(db)
+		bookingsSvc := bookingshttp.New()
 
-		http := v1.NewHTTP(healthSvc)
+		http := v1.NewHTTP(healthSvc, bookingsSvc)
 		err = http.Serve(*restPort)
 		if err != nil {
 			log.WithError(err).Panic("unable to start http server")
