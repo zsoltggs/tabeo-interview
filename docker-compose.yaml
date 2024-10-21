@@ -35,7 +35,7 @@ services:
       "up"
     ]
     volumes:
-      - ./services/bookings/resources/migrations:/migrations
+      - ./services/bookings/resources/database/migrations:/migrations
     depends_on:
       postgres:
         condition: service_healthy

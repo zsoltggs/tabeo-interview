@@ -30,6 +30,14 @@ build-docker:
 run-docker:
 	docker run -it --entrypoint sh bookings:local
 
+.PHONY: generate-sqlc
+generate-sqlc:
+	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+	sqlc generate -f ./services/bookings/resources/database/sqlc.yaml
+
 .PHONY: generate-mocks
 generate-mocks:
 	go generate ./...
+
+.PHONY: generate
+generate: generate-sqlc generate-mocks
