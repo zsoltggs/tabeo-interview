@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/service/availability"
+
 	"github.com/jonboulle/clockwork"
 	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/database"
 	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/models"
@@ -16,11 +18,13 @@ type Service interface {
 }
 
 type service struct {
-	db    database.Database
-	clock clockwork.Clock
+	db              database.Database
+	availabilitySvc availability.Availability
+	clock           clockwork.Clock
 }
 
 func New(db database.Database,
+	availabilitySvc availability.Availability,
 	clock clockwork.Clock) Service {
 	return &service{
 		db:    db,
