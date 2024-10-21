@@ -8,6 +8,7 @@ import (
 	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/thirdparty/spacex"
 )
 
+//go:generate mockgen -package=mocks -destination=../../mocks/availability.go github.com/zsoltggs/tabeo-interview/services/bookings/internal/service/availability  Availability
 type Availability interface {
 	// IsDateAvailable checks if date is available for the given launchPadID and Date
 	IsDateAvailable(ctx context.Context, launchPadID string, date time.Time) (bool, error)

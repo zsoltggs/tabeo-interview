@@ -26,7 +26,7 @@ type CreateBooking struct {
 	FirstName string    `json:"first_name"`
 	LastName  string    `json:"last_name"`
 	Gender    string    `json:"gender"`
-	BirthDay  time.Time `json:"birthday"`
+	Birthday  time.Time `json:"birthday"`
 
 	LaunchPadID   string    `json:"launch_pad_id"`
 	DestinationID string    `json:"destination_id"`
@@ -34,8 +34,9 @@ type CreateBooking struct {
 }
 
 type Filters struct {
-	Email   *string `json:"email"`
-	Country *string `json:"country"`
+	LaunchDate    *string `json:"launch_date"`
+	LaunchPadID   *string `json:"launch_pad_id"`
+	DestinationID *string `json:"destination_id"`
 }
 
 type Pagination struct {
