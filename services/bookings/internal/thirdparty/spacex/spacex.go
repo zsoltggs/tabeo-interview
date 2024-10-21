@@ -12,6 +12,7 @@ import (
 	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/models"
 )
 
+//go:generate mockgen -package=mocks -destination=../../mocks/spacex.go github.com/zsoltggs/tabeo-interview/services/bookings/internal/thirdparty/spacex SpaceXService
 type SpaceXService interface {
 	GetLaunchPadForID(ctx context.Context, launchPadID string) (*Launchpad, error)
 	GetLaunchesForDate(ctx context.Context, launchPadID string, date time.Time) ([]Launch, error)
