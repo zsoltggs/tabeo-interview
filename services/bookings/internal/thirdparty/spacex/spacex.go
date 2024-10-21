@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -31,7 +30,7 @@ func New(baseURL string, client *http.Client) SpaceXService {
 }
 
 func (s *service) GetLaunchPadForID(ctx context.Context, launchPadID string) (*Launchpad, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/launchpads", s.baseURL), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/launchpads", s.baseURL), nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create get request: %w", err)
 	}
@@ -82,16 +81,16 @@ func (s *service) GetLaunchesForDate(ctx context.Context, launchPadID string, da
 		},
 	}
 
-	// Marshal the request body to JSON
 	reqBody, err := json.Marshal(queryRequest)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal request: %w", err)
 	}
 	url := fmt.Sprintf("%s/launches/query", s.baseURL)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(reqBody))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(reqBody))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create get request: %w", err)
 	}
+	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := s.client.Do(req)
 	if err != nil {
@@ -102,8 +101,7 @@ func (s *service) GetLaunchesForDate(ctx context.Context, launchPadID string, da
 		return nil, fmt.Errorf("failed to fetch launches: status code %d", resp.StatusCode)
 	}
 
-	// Parse response body
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
