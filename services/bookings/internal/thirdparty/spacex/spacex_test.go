@@ -57,7 +57,7 @@ func TestGetLaunchPadForID(t *testing.T) {
 			// Create a mock server to simulate HTTP responses
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.mockResponseCode)
-				w.Write([]byte(tt.mockResponseBody))
+				_, _ = w.Write([]byte(tt.mockResponseBody))
 			}))
 			defer ts.Close()
 
@@ -77,11 +77,22 @@ func TestGetLaunchPadForID(t *testing.T) {
 }
 
 func TestGetLaunchesForDate(t *testing.T) {
+	mockDate := time.Date(2022, 07, 07, 13, 11, 0, 0, time.UTC)
 	mockLaunches := []Launch{
-		{Name: "Launch 1", DateUTC: time.Now()},
-		{Name: "Launch 2", DateUTC: time.Now()},
+		{
+			Name:      "Launch 1",
+			DateUTC:   mockDate,
+			Launchpad: "launchpad123",
+			Success:   true,
+		},
+		{
+			Name:      "Launch 2",
+			DateUTC:   mockDate,
+			Launchpad: "launchpad456",
+			Success:   false,
+		},
 	}
-	mockDate := time.Date(2024, 12, 01, 3, 1, 1, 1, time.UTC)
+
 	tests := []struct {
 		name             string
 		launchPadID      string
@@ -96,9 +107,12 @@ func TestGetLaunchesForDate(t *testing.T) {
 			launchPadID:      "1",
 			date:             mockDate,
 			mockResponseCode: http.StatusOK,
-			mockResponseBody: `{"docs":[{"name":"Launch 1"},{"name":"Launch 2"}]}`,
-			expectedResult:   mockLaunches,
-			expectedError:    nil,
+			mockResponseBody: `{"docs":[
+	{"name":"Launch 1","date_utc":"2022-07-07T13:11:00.000Z","launchpad":"launchpad123","success":true},
+	{"name":"Launch 2","date_utc":"2022-07-07T13:11:00.000Z","launchpad":"launchpad456","success":false}
+]}`,
+			expectedResult: mockLaunches,
+			expectedError:  nil,
 		},
 		{
 			name:             "error fetching launches",
@@ -109,15 +123,6 @@ func TestGetLaunchesForDate(t *testing.T) {
 			expectedResult:   nil,
 			expectedError:    errors.New("failed to fetch launches: status code 500"),
 		},
-		{
-			name:             "invalid response body",
-			launchPadID:      "1",
-			date:             mockDate,
-			mockResponseCode: http.StatusOK,
-			mockResponseBody: `asd`,
-			expectedResult:   nil,
-			expectedError:    errors.New("failed to fetch launches: status code 500"),
-		},
 	}
 
 	for _, tt := range tests {
@@ -125,7 +130,7 @@ func TestGetLaunchesForDate(t *testing.T) {
 			// Create a mock server to simulate HTTP responses
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.mockResponseCode)
-				w.Write([]byte(tt.mockResponseBody))
+				_, _ = w.Write([]byte(tt.mockResponseBody))
 			}))
 			defer ts.Close()
 

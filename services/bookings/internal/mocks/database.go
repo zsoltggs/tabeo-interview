@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	uuid "github.com/google/uuid"
 	models "github.com/zsoltggs/tabeo-interview/services/bookings/internal/models"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -67,7 +68,7 @@ func (mr *MockDatabaseMockRecorder) Create(arg0, arg1 any) *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockDatabase) Delete(arg0 context.Context, arg1 string) error {
+func (m *MockDatabase) Delete(arg0 context.Context, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -81,7 +82,7 @@ func (mr *MockDatabaseMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 }
 
 // GetByID mocks base method.
-func (m *MockDatabase) GetByID(arg0 context.Context, arg1 string) (*models.Booking, error) {
+func (m *MockDatabase) GetByID(arg0 context.Context, arg1 uuid.UUID) (*models.Booking, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", arg0, arg1)
 	ret0, _ := ret[0].(*models.Booking)

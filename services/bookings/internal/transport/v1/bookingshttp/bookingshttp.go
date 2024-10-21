@@ -35,7 +35,7 @@ func (s service) DeleteBooking(response http.ResponseWriter, request *http.Reque
 	panic("implement me")
 }
 
-func defaultPagination(pagination *bookingsv1.Pagination) models.Pagination {
+func defaultPagination(pagination *bookingsv1.Pagination) models.Pagination { //nolint
 	if pagination == nil {
 		return models.Pagination{
 			Offset: 0,

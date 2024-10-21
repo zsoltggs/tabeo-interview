@@ -147,6 +147,7 @@ func TestService_ListBookings(t *testing.T) {
 	mockAvailabilitySvc := mocks.NewMockAvailability(ctrl)
 	mockClock := clockwork.NewRealClock()
 	uuidGen := func() uuid.UUID { return uuid.New() }
+	ts := time.Date(2024, 1, 2, 3, 4, 5, 6, time.UTC)
 
 	svc := New(mockDB, mockAvailabilitySvc, mockClock, uuidGen)
 
@@ -161,7 +162,7 @@ func TestService_ListBookings(t *testing.T) {
 		{
 			name: "List bookings successfully",
 			filters: models.Filters{
-				LaunchDate:    toPtr("a"),
+				LaunchDate:    &ts,
 				LaunchPadID:   toPtr("b"),
 				DestinationID: toPtr("c"),
 			},
@@ -170,7 +171,7 @@ func TestService_ListBookings(t *testing.T) {
 				mockDB.EXPECT().
 					List(gomock.Any(),
 						models.Pagination{Limit: 10, Offset: 1}, models.Filters{
-							LaunchDate:    toPtr("a"),
+							LaunchDate:    &ts,
 							LaunchPadID:   toPtr("b"),
 							DestinationID: toPtr("c"),
 						}).
@@ -219,29 +220,30 @@ func TestService_DeleteBooking(t *testing.T) {
 	uuidGen := func() uuid.UUID { return uuid.New() }
 
 	svc := New(mockDB, mockAvailabilitySvc, mockClock, uuidGen)
+	bookingUUID := uuid.New()
 
 	tests := []struct {
 		name          string
-		bookingID     string
+		bookingID     uuid.UUID
 		mockSetup     func()
 		expectedError error
 	}{
 		{
 			name:      "Successful delete",
-			bookingID: "booking_1",
+			bookingID: bookingUUID,
 			mockSetup: func() {
 				mockDB.EXPECT().
-					Delete(gomock.Any(), "booking_1").
+					Delete(gomock.Any(), bookingUUID).
 					Return(nil)
 			},
 			expectedError: nil,
 		},
 		{
 			name:      "Error deleting booking",
-			bookingID: "booking_1",
+			bookingID: bookingUUID,
 			mockSetup: func() {
 				mockDB.EXPECT().
-					Delete(gomock.Any(), "booking_1").
+					Delete(gomock.Any(), bookingUUID).
 					Return(errors.New("delete error"))
 			},
 			expectedError: errors.New("unable to delete booking: delete error"),
