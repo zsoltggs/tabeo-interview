@@ -24,9 +24,9 @@ You have to verify if the requested trip is possible on the day from the provide
 Extra points:
 - When you use docker/docker-compose to run the project.
 - When you write unit/functional tests.
-- When you create an endpoint to delete a booking.
+- When you create an **endpoint to delete a booking.**
 
 Technical requirements:
-- Please, use Golang and Postgres.
+- Please, use Golang and **Postgres**.
 - Please, use GitHub or Bitbucket.
 - Commit your changes often. Do not push the whole project in one commit.
