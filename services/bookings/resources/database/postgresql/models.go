@@ -2,11 +2,12 @@
 // versions:
 //   sqlc v1.27.0
 
-package queries
+package authors
 
 import (
+	"time"
+
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Booking struct {
@@ -14,10 +15,10 @@ type Booking struct {
 	FirstName     string
 	LastName      string
 	Gender        string
-	Birthday      pgtype.Timestamptz
+	Birthday      string
 	LaunchPadID   string
 	DestinationID string
-	LaunchDate    pgtype.Timestamptz
-	CreatedAt     pgtype.Timestamptz
-	UpdatedAt     pgtype.Timestamptz
+	LaunchDate    time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }

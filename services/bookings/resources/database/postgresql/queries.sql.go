@@ -3,13 +3,13 @@
 //   sqlc v1.27.0
 // source: queries.sql
 
-package queries
+package authors
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createBooking = `-- name: CreateBooking :exec
@@ -32,16 +32,16 @@ type CreateBookingParams struct {
 	FirstName     string
 	LastName      string
 	Gender        string
-	Birthday      pgtype.Timestamptz
+	Birthday      string
 	LaunchPadID   string
 	DestinationID string
-	LaunchDate    pgtype.Timestamptz
-	CreatedAt     pgtype.Timestamptz
-	UpdatedAt     pgtype.Timestamptz
+	LaunchDate    time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) error {
-	_, err := q.db.Exec(ctx, createBooking,
+	_, err := q.db.ExecContext(ctx, createBooking,
 		arg.ID,
 		arg.FirstName,
 		arg.LastName,
@@ -57,33 +57,25 @@ func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) er
 }
 
 const deleteBooking = `-- name: DeleteBooking :exec
-DELETE
-FROM bookings
-WHERE id = $1
+DELETE FROM bookings WHERE id = $1
 `
 
 func (q *Queries) DeleteBooking(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteBooking, id)
+	_, err := q.db.ExecContext(ctx, deleteBooking, id)
 	return err
 }
 
 const getBookingByID = `-- name: GetBookingByID :one
-SELECT id,
-       first_name,
-       last_name,
-       gender,
-       birthday,
-       launch_pad_id,
-       destination_id,
-       launch_date,
-       created_at,
-       updated_at
-FROM bookings
-WHERE id = $1
+SELECT
+    id, first_name, last_name, gender, birthday, launch_pad_id, destination_id, launch_date, created_at, updated_at
+FROM
+    bookings
+WHERE
+    id = $1
 `
 
 func (q *Queries) GetBookingByID(ctx context.Context, id uuid.UUID) (Booking, error) {
-	row := q.db.QueryRow(ctx, getBookingByID, id)
+	row := q.db.QueryRowContext(ctx, getBookingByID, id)
 	var i Booking
 	err := row.Scan(
 		&i.ID,
@@ -101,39 +93,34 @@ func (q *Queries) GetBookingByID(ctx context.Context, id uuid.UUID) (Booking, er
 }
 
 const listBookings = `-- name: ListBookings :many
-SELECT id,
-       first_name,
-       last_name,
-       gender,
-       birthday,
-       launch_pad_id,
-       destination_id,
-       launch_date,
-       created_at,
-       updated_at
-FROM bookings
-WHERE launch_date = coalesce($1, launch_date)
-  AND launch_pad_id = coalesce($2, launch_pad_id)
-  AND destination_id = coalesce($3, destination_id)
-ORDER BY created_at DESC LIMIT $5
-OFFSET $4
+SELECT
+    id, first_name, last_name, gender, birthday, launch_pad_id, destination_id, launch_date, created_at, updated_at
+FROM
+    bookings
+WHERE
+    ($1::timestamptz IS NULL OR launch_date = $1)
+  AND ($2::varchar IS NULL OR launch_pad_id = $2)
+  AND ($3::varchar IS NULL OR destination_id = $3)
+ORDER BY
+    created_at DESC
+    LIMIT $4 OFFSET $5
 `
 
 type ListBookingsParams struct {
-	LaunchDate    pgtype.Timestamptz
-	LaunchPadID   pgtype.Text
-	DestinationID pgtype.Text
-	Offset        int32
-	Limit         int32
+	Column1 time.Time
+	Column2 string
+	Column3 string
+	Limit   int32
+	Offset  int32
 }
 
 func (q *Queries) ListBookings(ctx context.Context, arg ListBookingsParams) ([]Booking, error) {
-	rows, err := q.db.Query(ctx, listBookings,
-		arg.LaunchDate,
-		arg.LaunchPadID,
-		arg.DestinationID,
-		arg.Offset,
+	rows, err := q.db.QueryContext(ctx, listBookings,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
 		arg.Limit,
+		arg.Offset,
 	)
 	if err != nil {
 		return nil, err
@@ -157,6 +144,9 @@ func (q *Queries) ListBookings(ctx context.Context, arg ListBookingsParams) ([]B
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

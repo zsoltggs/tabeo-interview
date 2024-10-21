@@ -6,4 +6,10 @@ sql:
     gen:
       go:
         package: "queries"
+        sql_package: "pgx/v5"
         out: "../../internal/database/queries"
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"

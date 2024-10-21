@@ -13,25 +13,38 @@ VALUES ($1,
         $10);
 
 -- name: DeleteBooking :exec
-DELETE FROM bookings WHERE id = $1;
+DELETE
+FROM bookings
+WHERE id = $1;
 
 -- name: GetBookingByID :one
-SELECT
-    id, first_name, last_name, gender, birthday, launch_pad_id, destination_id, launch_date, created_at, updated_at
-FROM
-    bookings
-WHERE
-    id = $1;
+SELECT id,
+       first_name,
+       last_name,
+       gender,
+       birthday,
+       launch_pad_id,
+       destination_id,
+       launch_date,
+       created_at,
+       updated_at
+FROM bookings
+WHERE id = $1;
 
 -- name: ListBookings :many
-SELECT
-    id, first_name, last_name, gender, birthday, launch_pad_id, destination_id, launch_date, created_at, updated_at
-FROM
-    bookings
-WHERE
-    ($1::timestamptz IS NULL OR launch_date = $1)
-  AND ($2::varchar IS NULL OR launch_pad_id = $2)
-  AND ($3::varchar IS NULL OR destination_id = $3)
-ORDER BY
-    created_at DESC
-    LIMIT $4 OFFSET $5;
+SELECT id,
+       first_name,
+       last_name,
+       gender,
+       birthday,
+       launch_pad_id,
+       destination_id,
+       launch_date,
+       created_at,
+       updated_at
+FROM bookings
+WHERE launch_date = coalesce(sqlc.narg('launch_date'), launch_date)
+  AND launch_pad_id = coalesce(sqlc.narg('launch_pad_id'), launch_pad_id)
+  AND destination_id = coalesce(sqlc.narg('destination_id'), destination_id)
+ORDER BY created_at DESC LIMIT sqlc.arg('limit')
+OFFSET sqlc.arg('offset');

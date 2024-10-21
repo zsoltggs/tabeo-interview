@@ -34,9 +34,9 @@ type CreateBooking struct {
 }
 
 type Filters struct {
-	LaunchDate    *string `json:"launch_date"`
-	LaunchPadID   *string `json:"launch_pad_id"`
-	DestinationID *string `json:"destination_id"`
+	LaunchDate    *time.Time `json:"launch_date"`
+	LaunchPadID   *string    `json:"launch_pad_id"`
+	DestinationID *string    `json:"destination_id"`
 }
 
 type Pagination struct {
