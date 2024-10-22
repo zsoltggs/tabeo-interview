@@ -101,8 +101,13 @@ func TestDeleteBooking(t *testing.T) {
 	err = db.Delete(context.Background(), id)
 	assert.NoError(t, err)
 
+	err = db.Delete(context.Background(), id)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrNotFound)
+
 	_, err = db.GetByID(context.Background(), id)
 	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrNotFound)
 }
 
 func TestListBookings(t *testing.T) {

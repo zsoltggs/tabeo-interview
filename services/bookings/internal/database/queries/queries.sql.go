@@ -56,15 +56,17 @@ func (q *Queries) CreateBooking(ctx context.Context, arg CreateBookingParams) er
 	return err
 }
 
-const deleteBooking = `-- name: DeleteBooking :exec
+const deleteBooking = `-- name: DeleteBooking :one
 DELETE
 FROM bookings
 WHERE id = $1
+RETURNING id
 `
 
-func (q *Queries) DeleteBooking(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteBooking, id)
-	return err
+func (q *Queries) DeleteBooking(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, deleteBooking, id)
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getBookingByID = `-- name: GetBookingByID :one

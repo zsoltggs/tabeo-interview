@@ -12,10 +12,11 @@ VALUES ($1,
         $9,
         $10);
 
--- name: DeleteBooking :exec
+-- name: DeleteBooking :one
 DELETE
 FROM bookings
-WHERE id = $1;
+WHERE id = $1
+RETURNING id;
 
 -- name: GetBookingByID :one
 SELECT id,

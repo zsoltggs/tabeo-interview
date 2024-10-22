@@ -174,7 +174,6 @@ func (h bookingsHTTP) DeleteBooking(response http.ResponseWriter, request *http.
 	err = h.service.DeleteBooking(ctx, bookingID)
 	switch {
 	case errors.Is(err, database.ErrNotFound):
-		// TODO Implement this error in the DB
 		response.WriteHeader(http.StatusNotFound)
 		return
 	case err != nil:

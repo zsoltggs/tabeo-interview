@@ -2,7 +2,10 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 
 	"github.com/jackc/pgx/v5/pgtype"
 
@@ -54,18 +57,27 @@ func (q *pg) Create(ctx context.Context, booking models.Booking) error {
 }
 
 func (q *pg) Delete(ctx context.Context, id uuid.UUID) error {
-	err := q.queries.DeleteBooking(ctx, id)
+	_, err := q.queries.DeleteBooking(ctx, id)
 	if err != nil {
-		return fmt.Errorf("error deleting booking: %w", err)
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return ErrNotFound
+		default:
+			return fmt.Errorf("unable to delete: %w", err)
+		}
 	}
 	return nil
 }
 
 func (q *pg) GetByID(ctx context.Context, id uuid.UUID) (*models.Booking, error) {
-	// TODO Add ErrNotFound
 	booking, err := q.queries.GetBookingByID(ctx, id)
 	if err != nil {
-		return nil, err
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, ErrNotFound
+		default:
+			return nil, fmt.Errorf("unable to get booking: %w", err)
+		}
 	}
 	return &models.Booking{
 		ID:            booking.ID,
