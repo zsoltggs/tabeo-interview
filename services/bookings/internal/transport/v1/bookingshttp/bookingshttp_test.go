@@ -10,6 +10,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gorilla/mux"
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/database"
+
 	"github.com/google/uuid"
 	bookingsv1 "github.com/zsoltggs/tabeo-interview/services/bookings/pkg/bookings/v1"
 
@@ -294,6 +297,84 @@ func TestListBookings(t *testing.T) {
 				assert.NoError(t, err)
 				assert.JSONEq(t, tt.expectedBody, string(body))
 			}
+		})
+	}
+}
+
+func TestDeleteBooking(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocks.NewMockService(ctrl)
+	handler := bookingsHTTP{service: mockService}
+	fixedUUID := uuid.MustParse("0aadd991-953d-48d3-a4a8-8e1182a2c723")
+
+	tests := []struct {
+		name           string
+		method         string
+		bookingID      string
+		expectedStatus int
+		mockSetup      func()
+	}{
+		{
+			name:           "Method Not Allowed",
+			method:         http.MethodGet,
+			bookingID:      "123e4567-e89b-12d3-a456-426614174000",
+			expectedStatus: http.StatusMethodNotAllowed,
+		},
+		{
+			name:           "Bad Request - Invalid UUID",
+			method:         http.MethodDelete,
+			bookingID:      "invalid-uuid",
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Booking Not Found",
+			method:         http.MethodDelete,
+			bookingID:      fixedUUID.String(),
+			expectedStatus: http.StatusNotFound,
+			mockSetup: func() {
+				mockService.EXPECT().DeleteBooking(gomock.Any(), fixedUUID).
+					Return(database.ErrNotFound)
+			},
+		},
+		{
+			name:           "Internal Server Error",
+			method:         http.MethodDelete,
+			bookingID:      fixedUUID.String(),
+			expectedStatus: http.StatusInternalServerError,
+			mockSetup: func() {
+				mockService.EXPECT().DeleteBooking(gomock.Any(), fixedUUID).
+					Return(errors.New("internal error"))
+			},
+		},
+		{
+			name:           "Success",
+			method:         http.MethodDelete,
+			bookingID:      fixedUUID.String(),
+			expectedStatus: http.StatusNoContent,
+			mockSetup: func() {
+				mockService.EXPECT().DeleteBooking(gomock.Any(), fixedUUID).
+					Return(nil)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.mockSetup != nil {
+				tt.mockSetup()
+			}
+
+			req := httptest.NewRequest(tt.method, "/bookings/"+tt.bookingID, nil)
+			response := httptest.NewRecorder()
+
+			router := mux.NewRouter()
+			router.HandleFunc("/bookings/{booking-id}", handler.DeleteBooking)
+
+			router.ServeHTTP(response, req)
+
+			assert.Equal(t, tt.expectedStatus, response.Code)
 		})
 	}
 }

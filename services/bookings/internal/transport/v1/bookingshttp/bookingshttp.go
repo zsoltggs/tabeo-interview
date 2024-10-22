@@ -6,6 +6,11 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/google/uuid"
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/database"
+
+	"github.com/gorilla/mux"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/service"
 
@@ -149,6 +154,35 @@ func (h bookingsHTTP) ListBookings(response http.ResponseWriter, request *http.R
 }
 
 func (h bookingsHTTP) DeleteBooking(response http.ResponseWriter, request *http.Request) {
-	//TODO implement me
-	panic("implement me")
+	if request.Method != http.MethodDelete {
+		response.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	vars := mux.Vars(request)
+	bookingIDStr := vars["booking-id"]
+	if bookingIDStr == "" {
+		response.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	bookingID, err := uuid.Parse(bookingIDStr)
+	if err != nil {
+		response.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	ctx := request.Context()
+	err = h.service.DeleteBooking(ctx, bookingID)
+	switch {
+	case errors.Is(err, database.ErrNotFound):
+		// TODO Implement this error in the DB
+		response.WriteHeader(http.StatusNotFound)
+		return
+	case err != nil:
+		log.WithError(err).Error("unable to delete booking")
+		response.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	response.WriteHeader(http.StatusNoContent)
 }
