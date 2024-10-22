@@ -46,8 +46,13 @@ type ListBookingsRequest struct {
 	Pagination Pagination          `json:"pagination"`
 }
 
+type ErrorResponse struct {
+	Error string `json:"error,omitempty"`
+}
+
 type ListBookingsResponse struct {
-	Bookings []Booking `json:"bookings"`
+	Bookings []Booking `json:"bookings,omitempty"`
+	Error    string    `json:"error,omitempty"`
 }
 
 type ListBookingsFilters struct {

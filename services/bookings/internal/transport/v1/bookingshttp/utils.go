@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
+	"strconv"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -11,23 +13,67 @@ import (
 	bookingsv1 "github.com/zsoltggs/tabeo-interview/services/bookings/pkg/bookings/v1"
 )
 
-func defaultPagination(pagination *bookingsv1.Pagination) models.Pagination { //nolint
-	if pagination == nil {
-		return models.Pagination{
-			Offset: 0,
-			Limit:  10,
+func createListBookingsFromQueryParams(params url.Values) (*bookingsv1.ListBookingsRequest, error) {
+	req := bookingsv1.ListBookingsRequest{}
+	offset := 0
+	offsetParam := params.Get("offset")
+	if offsetParam != "" {
+		parsedOffset, err := strconv.Atoi(offsetParam)
+		if err != nil {
+			return nil, errors.New("unable to parse offset")
+		}
+		offset = parsedOffset
+		if offset < 0 {
+			return nil, errors.New("invalid offset")
 		}
 	}
-	newPagination := models.Pagination{
-		Offset: pagination.Offset,
-		Limit:  pagination.Limit,
+
+	req.Pagination.Offset = offset
+
+	limit := 10 // Default limit
+	limitParam := params.Get("limit")
+	if limitParam != "" {
+		parsedLimit, err := strconv.Atoi(params.Get("limit"))
+		if err != nil {
+			return nil, errors.New("unable to parse limit")
+		}
+		limit = parsedLimit
+		if limit < 0 {
+			return nil, errors.New("invalid limit")
+		}
 	}
 
-	if newPagination.Limit == 0 {
-		newPagination.Limit = 10
+	req.Pagination.Limit = limit
+
+	if launchDateStr := params.Get("launch_date"); launchDateStr != "" {
+		req.Filters.LaunchDate = &launchDateStr
+		// TODO Ideally launch date should be in the future, but for now it will accept dates in the past to make
+		// testing easier
 	}
 
-	return newPagination
+	if launchPadID := params.Get("launch_pad_id"); launchPadID != "" {
+		req.Filters.LaunchPadID = &launchPadID
+	}
+
+	if destinationID := params.Get("destination_id"); destinationID != "" {
+		req.Filters.DestinationID = &destinationID
+	}
+	return &req, nil
+}
+
+func toDomainFilter(filters bookingsv1.ListBookingsFilters) (models.Filters, error) {
+	result := models.Filters{
+		LaunchPadID:   filters.LaunchPadID,
+		DestinationID: filters.DestinationID,
+	}
+	if filters.LaunchDate != nil {
+		launchDate, err := time.Parse("2006-01-02", *filters.LaunchDate)
+		if err != nil {
+			return models.Filters{}, errors.New("invalid launch_date")
+		}
+		result.LaunchDate = &launchDate
+	}
+	return result, nil
 }
 
 func fromDomainBooking(booking models.Booking) bookingsv1.Booking {
@@ -47,7 +93,7 @@ func fromDomainBooking(booking models.Booking) bookingsv1.Booking {
 
 func writeErrorResponse(response http.ResponseWriter, reason string) {
 	response.Header().Set("Content-Type", "application/json")
-	resp := bookingsv1.CreateBookingResponse{
+	resp := bookingsv1.ErrorResponse{
 		Error: reason,
 	}
 	respJSON, err := json.Marshal(resp)
@@ -62,6 +108,7 @@ func writeErrorResponse(response http.ResponseWriter, reason string) {
 	}
 }
 
+// TODO Test
 func toDomainBooking(req bookingsv1.CreateBookingRequest) (*models.CreateBooking, error) {
 	if req.DestinationID == "" {
 		return nil, errors.New("destination id is required")

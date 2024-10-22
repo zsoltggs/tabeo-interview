@@ -42,7 +42,6 @@ func (h bookingsHTTP) CreateBooking(response http.ResponseWriter, request *http.
 	}
 	defer request.Body.Close()
 
-	// Unmarshal the JSON into the struct
 	var bookingReq bookingsv1.CreateBookingRequest
 	err = json.Unmarshal(body, &bookingReq)
 	if err != nil {
@@ -94,8 +93,59 @@ func (h bookingsHTTP) CreateBooking(response http.ResponseWriter, request *http.
 }
 
 func (h bookingsHTTP) ListBookings(response http.ResponseWriter, request *http.Request) {
-	//TODO implement me
-	panic("implement me")
+	if request.Method != http.MethodGet {
+		response.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	req, err := createListBookingsFromQueryParams(request.URL.Query())
+	if err != nil {
+		response.WriteHeader(http.StatusBadRequest)
+		writeErrorResponse(response, err.Error())
+		return
+	}
+
+	filters, err := toDomainFilter(req.Filters)
+	if err != nil {
+		response.WriteHeader(http.StatusBadRequest)
+		writeErrorResponse(response, err.Error())
+		return
+	}
+
+	ctx := request.Context()
+	bookings, err := h.service.ListBookings(ctx, filters, models.Pagination{
+		Offset: req.Pagination.Offset,
+		Limit:  req.Pagination.Limit,
+	})
+	if err != nil {
+		log.WithError(err).Error("unable to list bookings")
+		response.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	var results []bookingsv1.Booking
+	for _, b := range bookings {
+		results = append(results, fromDomainBooking(b))
+	}
+
+	resp := bookingsv1.ListBookingsResponse{
+		Bookings: results,
+	}
+	respJSON, err := json.Marshal(resp)
+	if err != nil {
+		log.WithError(err).Error("unable to marshal list bookings response")
+		response.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	response.Header().Set("Content-Type", "application/json")
+	response.WriteHeader(http.StatusOK)
+	_, err = response.Write(respJSON)
+	if err != nil {
+		log.WithError(err).Error("unable to write list bookings response")
+		response.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h bookingsHTTP) DeleteBooking(response http.ResponseWriter, request *http.Request) {
