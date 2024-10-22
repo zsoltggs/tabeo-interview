@@ -62,3 +62,5 @@ func Test_SpaceX_GetLaunchesForDate(t *testing.T) {
 	require.Len(t, res, 1)
 	assert.Equal(t, expected, res[0])
 }
+
+//TODO Add E2E tests for the svc (HTTP)

@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	uuid "github.com/google/uuid"
 	models "github.com/zsoltggs/tabeo-interview/services/bookings/internal/models"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -56,7 +57,7 @@ func (mr *MockServiceMockRecorder) CreateBooking(arg0, arg1 any) *gomock.Call {
 }
 
 // DeleteBooking mocks base method.
-func (m *MockService) DeleteBooking(arg0 context.Context, arg1 string) error {
+func (m *MockService) DeleteBooking(arg0 context.Context, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteBooking", arg0, arg1)
 	ret0, _ := ret[0].(error)

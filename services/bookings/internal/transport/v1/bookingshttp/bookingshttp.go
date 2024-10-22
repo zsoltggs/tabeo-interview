@@ -1,7 +1,13 @@
 package bookingshttp
 
 import (
+	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/service"
 
 	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/models"
 	bookingsv1 "github.com/zsoltggs/tabeo-interview/services/bookings/pkg/bookings/v1"
@@ -13,43 +19,86 @@ type BookingsHTTP interface {
 	DeleteBooking(response http.ResponseWriter, request *http.Request)
 }
 
-type service struct {
+type bookingsHTTP struct {
+	service service.Service
 }
 
-func New() BookingsHTTP {
-	return &service{}
+func New(service service.Service) BookingsHTTP {
+	return &bookingsHTTP{
+		service: service,
+	}
 }
 
-func (s service) CreateBooking(response http.ResponseWriter, request *http.Request) {
+func (h bookingsHTTP) CreateBooking(response http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		response.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	body, err := io.ReadAll(request.Body)
+	if err != nil {
+		writeErrorResponse(response, "bad request")
+		response.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	defer request.Body.Close()
+
+	// Unmarshal the JSON into the struct
+	var bookingReq bookingsv1.CreateBookingRequest
+	err = json.Unmarshal(body, &bookingReq)
+	if err != nil {
+		response.WriteHeader(http.StatusBadRequest)
+		writeErrorResponse(response, "bad request")
+		return
+	}
+	booking, err := toDomainBooking(bookingReq)
+	if err != nil {
+		response.WriteHeader(http.StatusBadRequest)
+		writeErrorResponse(response, err.Error())
+		return
+	}
+	ctx := request.Context()
+	res, err := h.service.CreateBooking(ctx, *booking)
+	switch {
+	case errors.Is(err, models.ErrNotAvailable):
+		response.WriteHeader(http.StatusConflict)
+		writeErrorResponse(response, "date is unavailable")
+		return
+	case errors.Is(err, models.ErrNotFoundLaunchpad):
+		response.WriteHeader(http.StatusNotFound)
+		writeErrorResponse(response, "launch pad with ID not found")
+		return
+	case err != nil:
+		response.WriteHeader(http.StatusInternalServerError)
+		log.WithError(err).Error("unable to create booking")
+		return
+	}
+	result := fromDomainBooking(*res)
+	resp := bookingsv1.CreateBookingResponse{
+		Booking: &result,
+	}
+	respJSON, err := json.Marshal(resp)
+	if err != nil {
+		log.WithError(err).Error("unable to marshal create booking response")
+		response.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	response.Header().Set("Content-Type", "application/json")
+	response.WriteHeader(http.StatusCreated)
+	_, err = response.Write(respJSON)
+	if err != nil {
+		log.WithError(err).Error("unable to write create booking response")
+		response.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	return
+}
+
+func (h bookingsHTTP) ListBookings(response http.ResponseWriter, request *http.Request) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (s service) ListBookings(response http.ResponseWriter, request *http.Request) {
+func (h bookingsHTTP) DeleteBooking(response http.ResponseWriter, request *http.Request) {
 	//TODO implement me
 	panic("implement me")
-}
-
-func (s service) DeleteBooking(response http.ResponseWriter, request *http.Request) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func defaultPagination(pagination *bookingsv1.Pagination) models.Pagination { //nolint
-	if pagination == nil {
-		return models.Pagination{
-			Offset: 0,
-			Limit:  10,
-		}
-	}
-	newPagination := models.Pagination{
-		Offset: pagination.Offset,
-		Limit:  pagination.Limit,
-	}
-
-	if newPagination.Limit == 0 {
-		newPagination.Limit = 10
-	}
-
-	return newPagination
 }

@@ -23,6 +23,7 @@ type service struct {
 	client  *http.Client
 }
 
+// TODO Add cache
 func New(baseURL string, client *http.Client) SpaceXService {
 	return &service{
 		baseURL: baseURL,
