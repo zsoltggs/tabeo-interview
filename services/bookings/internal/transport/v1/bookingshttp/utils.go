@@ -108,7 +108,6 @@ func writeErrorResponse(response http.ResponseWriter, reason string) {
 	}
 }
 
-// TODO Test
 func toDomainBooking(req bookingsv1.CreateBookingRequest) (*models.CreateBooking, error) {
 	if req.DestinationID == "" {
 		return nil, errors.New("destination id is required")
