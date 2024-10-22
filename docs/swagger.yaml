@@ -1,0 +1,190 @@
+openapi: 3.0.0
+info:
+  title: Bookings API
+  description: API for managing bookings and launch information.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /health:
+    get:
+      summary: Health Check
+      responses:
+        '200':
+          description: Service is up and running
+
+  /bookings:
+    get:
+      summary: List Bookings
+      parameters:
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 0
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 10
+        - name: launch_date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2024-01-01'
+        - name: launch_pad_id
+          in: query
+          required: false
+          schema:
+            type: string
+            example: 'pad-1'
+        - name: destination_id
+          in: query
+          required: false
+          schema:
+            type: string
+            example: 'dest-1'
+      responses:
+        '200':
+          description: A list of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: 'booking-1'
+                    firstName:
+                      type: string
+                      example: 'John'
+                    lastName:
+                      type: string
+                      example: 'Doe'
+                    launchDate:
+                      type: string
+                      format: date
+                      example: '2024-01-01'
+                    destinationID:
+                      type: string
+                      example: 'dest-1'
+                    launchPadID:
+                      type: string
+                      example: 'pad-1'
+        '400':
+          description: Invalid parameters
+        '500':
+          description: Internal server error
+
+    post:
+      summary: Create a Booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                destinationID:
+                  type: string
+                  example: 'dest-1'
+                launchPadID:
+                  type: string
+                  example: 'pad-1'
+                birthday:
+                  type: string
+                  format: date
+                  example: '1990-01-01'
+                firstName:
+                  type: string
+                  example: 'John'
+                lastName:
+                  type: string
+                  example: 'Doe'
+                gender:
+                  type: string
+                  enum: [male, female, other]
+                  example: 'male'
+                launchDate:
+                  type: string
+                  format: date
+                  example: '2024-01-01'
+      responses:
+        '201':
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  booking:
+                    type: "object"
+                    properties:
+                      id:
+                        type: "string"
+                        format: "uuid"
+                        example: "123e4567-e89b-12d3-a456-426614174000"
+                      first_name:
+                        type: "string"
+                        example: "John"
+                      last_name:
+                        type: "string"
+                        example: "Doe"
+                      gender:
+                        type: "string"
+                        example: "male"
+                      birthday:
+                        type: "string"
+                        format: "date"
+                        example: "1990-01-01"
+                      launch_pad_id:
+                        type: "string"
+                        example: "launch-pad-id"
+                      destination_id:
+                        type: "string"
+                        example: "destination-id"
+                      launch_date:
+                        type: "string"
+                        format: "date"
+                        example: "2023-10-01"
+                      created_at:
+                        type: "string"
+                        format: "date-time"
+                        example: "2023-10-22T12:00:00Z"
+                      updated_at:
+                        type: "string"
+                        format: "date-time"
+                        example: "2023-10-22T12:00:00Z"
+        '400':
+          description: Bad request, validation errors
+        '404':
+          description: Launch pad not found
+        '409':
+          description: Date is unavailable for the given launchpad
+        '500':
+          description: Internal server error
+
+    delete:
+      summary: Delete a Booking
+      parameters:
+        - name: booking-id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 'booking-1'
+      responses:
+        '204':
+          description: Booking deleted successfully
+        '400':
+          description: Bad request, booking ID is required or invalid
+        '404':
+          description: Booking not found
+        '500':
+          description: Internal server error
