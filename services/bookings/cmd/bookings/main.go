@@ -2,9 +2,17 @@ package main
 
 import (
 	"context"
+	http "net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/jonboulle/clockwork"
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/service"
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/service/availability"
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/thirdparty/spacex"
 
 	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/transport/v1/bookingshttp"
 
@@ -32,6 +40,12 @@ func main() {
 		Value:  8080,
 		EnvVar: "REST_PORT",
 	})
+	spaceXBaseURL := app.String(cli.StringOpt{
+		Name:   "spacex-base-url",
+		Desc:   "url for spacex base",
+		Value:  "https://api.spacexdata.com/v4",
+		EnvVar: "SPACEX_BASE_URL",
+	})
 
 	app.Action = func() {
 		log.Info("starting server")
@@ -44,14 +58,19 @@ func main() {
 		defer db.Close(ctx)
 
 		healthSvc := healthhttp.New(db)
-		bookingsSvc := bookingshttp.New()
+		spacexSvc := spacex.New(*spaceXBaseURL, &http.Client{
+			Timeout: 10 * time.Second,
+		})
+		availabilitySvc := availability.New(spacexSvc)
+		svc := service.New(db, availabilitySvc, clockwork.NewRealClock(), uuid.New)
+		bookingsSvc := bookingshttp.New(svc)
 
-		http := v1.NewHTTP(healthSvc, bookingsSvc)
-		err = http.Serve(*restPort)
+		httpServer := v1.NewHTTP(healthSvc, bookingsSvc)
+		err = httpServer.Serve(*restPort)
 		if err != nil {
 			log.WithError(err).Panic("unable to start http server")
 		}
-		defer http.GracefulStop(ctx)
+		defer httpServer.GracefulStop(ctx)
 
 		waitForShutdown(cancel)
 	}
