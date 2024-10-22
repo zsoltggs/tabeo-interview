@@ -94,7 +94,6 @@ func (h bookingsHTTP) CreateBooking(response http.ResponseWriter, request *http.
 		response.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	return
 }
 
 func (h bookingsHTTP) ListBookings(response http.ResponseWriter, request *http.Request) {
