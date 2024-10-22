@@ -6,9 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/thirdparty/spacex/smodels"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/mocks"
-	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/thirdparty/spacex"
 	"go.uber.org/mock/gomock"
 )
 
@@ -20,7 +21,7 @@ func TestIsDateAvailable(t *testing.T) {
 	svc := New(mockSpaceXService)
 
 	const launchPadID = "5e9e4501f509094ba4566f84"
-	launch := spacex.Launch{
+	launch := smodels.Launch{
 		Name:      "Starlink 4-21 (v1.5)",
 		DateUTC:   time.Date(2022, 07, 07, 13, 11, 00, 0, time.UTC),
 		Launchpad: launchPadID,
@@ -41,7 +42,7 @@ func TestIsDateAvailable(t *testing.T) {
 			mockSetup: func() {
 				mockSpaceXService.EXPECT().
 					GetLaunchPadForID(gomock.Any(), launchPadID).
-					Return(&spacex.Launchpad{}, nil)
+					Return(&smodels.Launchpad{}, nil)
 				mockSpaceXService.EXPECT().
 					GetLaunchesForDate(gomock.Any(), launchPadID, time.Date(2022, 7, 7, 0, 0, 0, 0, time.UTC)).
 					Return(nil, nil)
@@ -56,10 +57,10 @@ func TestIsDateAvailable(t *testing.T) {
 			mockSetup: func() {
 				mockSpaceXService.EXPECT().
 					GetLaunchPadForID(gomock.Any(), launchPadID).
-					Return(&spacex.Launchpad{}, nil)
+					Return(&smodels.Launchpad{}, nil)
 				mockSpaceXService.EXPECT().
 					GetLaunchesForDate(gomock.Any(), launchPadID, time.Date(2022, 7, 7, 0, 0, 0, 0, time.UTC)).
-					Return([]spacex.Launch{launch}, nil)
+					Return([]smodels.Launch{launch}, nil)
 			},
 			expected:      false,
 			expectedError: nil,
@@ -83,7 +84,7 @@ func TestIsDateAvailable(t *testing.T) {
 			mockSetup: func() {
 				mockSpaceXService.EXPECT().
 					GetLaunchPadForID(gomock.Any(), launchPadID).
-					Return(&spacex.Launchpad{}, nil)
+					Return(&smodels.Launchpad{}, nil)
 				mockSpaceXService.EXPECT().
 					GetLaunchesForDate(gomock.Any(), launchPadID, time.Date(2022, 7, 7, 0, 0, 0, 0, time.UTC)).
 					Return(nil, errors.New("internal server error"))

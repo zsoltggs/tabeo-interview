@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/thirdparty/spacex/smodels"
+
 	bookingsv1 "github.com/zsoltggs/tabeo-interview/services/bookings/pkg/bookings/v1"
 
 	"github.com/stretchr/testify/assert"
@@ -55,7 +57,7 @@ func Test_SpaceX_GetLaunchPadForID(t *testing.T) {
 func Test_SpaceX_GetLaunchesForDate(t *testing.T) {
 	isE2ETestEnabled(t)
 
-	expected := spacex.Launch{
+	expected := smodels.Launch{
 		Name:      "Starlink 4-21 (v1.5)",
 		DateUTC:   launchExistsDate,
 		Launchpad: validLaunchPadID,

@@ -8,22 +8,24 @@ import (
 	"testing"
 	"time"
 
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/thirdparty/spacex/smodels"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/models"
 )
 
 func TestGetLaunchPadForID(t *testing.T) {
-	mockLaunchpads := []Launchpad{
-		{Id: "1", Name: "Launchpad 1"},
-		{Id: "2", Name: "Launchpad 2"},
+	mockLaunchpads := []smodels.Launchpad{
+		{ID: "1", Name: "Launchpad 1"},
+		{ID: "2", Name: "Launchpad 2"},
 	}
 	tests := []struct {
 		name             string
 		launchPadID      string
 		mockResponseCode int
 		mockResponseBody string
-		expectedResult   *Launchpad
+		expectedResult   *smodels.Launchpad
 		expectedError    error
 	}{
 		{
@@ -66,7 +68,7 @@ func TestGetLaunchPadForID(t *testing.T) {
 
 			result, err := svc.GetLaunchPadForID(context.Background(), tt.launchPadID)
 			if tt.expectedResult != nil {
-				assert.Equal(t, tt.expectedResult.Id, result.Id)
+				assert.Equal(t, tt.expectedResult.ID, result.ID)
 				assert.Nil(t, err)
 			} else if tt.expectedError != nil {
 				assert.Equal(t, tt.expectedError, err)
@@ -78,7 +80,7 @@ func TestGetLaunchPadForID(t *testing.T) {
 
 func TestGetLaunchesForDate(t *testing.T) {
 	mockDate := time.Date(2022, 07, 07, 13, 11, 0, 0, time.UTC)
-	mockLaunches := []Launch{
+	mockLaunches := []smodels.Launch{
 		{
 			Name:      "Launch 1",
 			DateUTC:   mockDate,
@@ -99,7 +101,7 @@ func TestGetLaunchesForDate(t *testing.T) {
 		date             time.Time
 		mockResponseCode int
 		mockResponseBody string
-		expectedResult   []Launch
+		expectedResult   []smodels.Launch
 		expectedError    error
 	}{
 		{

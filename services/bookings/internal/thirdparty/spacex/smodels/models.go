@@ -1,4 +1,4 @@
-package spacex
+package smodels
 
 import "time"
 
@@ -40,5 +40,5 @@ type Launchpad struct {
 	Locality string `json:"locality"`
 	Region   string `json:"region"`
 	Status   string `json:"status"`
-	Id       string `json:"id"`
+	ID       string `json:"id"`
 }

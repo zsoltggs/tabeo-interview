@@ -58,9 +58,12 @@ func main() {
 		defer db.Close(ctx)
 
 		healthSvc := healthhttp.New(db)
-		spacexSvc := spacex.New(*spaceXBaseURL, &http.Client{
-			Timeout: 10 * time.Second,
-		})
+		spacexSvc := spacex.NewCache(
+			spacex.New(*spaceXBaseURL, &http.Client{
+				Timeout: 10 * time.Second,
+			}),
+			clockwork.NewRealClock(),
+		)
 		availabilitySvc := availability.New(spacexSvc)
 		svc := service.New(db, availabilitySvc, clockwork.NewRealClock(), uuid.New)
 		bookingsSvc := bookingshttp.New(svc)

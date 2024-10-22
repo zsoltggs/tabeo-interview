@@ -9,13 +9,15 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/thirdparty/spacex/smodels"
+
 	"github.com/zsoltggs/tabeo-interview/services/bookings/internal/models"
 )
 
 //go:generate mockgen -package=mocks -destination=../../mocks/spacex.go github.com/zsoltggs/tabeo-interview/services/bookings/internal/thirdparty/spacex SpaceXService
 type SpaceXService interface {
-	GetLaunchPadForID(ctx context.Context, launchPadID string) (*Launchpad, error)
-	GetLaunchesForDate(ctx context.Context, launchPadID string, date time.Time) ([]Launch, error)
+	GetLaunchPadForID(ctx context.Context, launchPadID string) (*smodels.Launchpad, error)
+	GetLaunchesForDate(ctx context.Context, launchPadID string, date time.Time) ([]smodels.Launch, error)
 }
 
 type service struct {
@@ -23,7 +25,6 @@ type service struct {
 	client  *http.Client
 }
 
-// TODO Add cache
 func New(baseURL string, client *http.Client) SpaceXService {
 	return &service{
 		baseURL: baseURL,
@@ -31,7 +32,7 @@ func New(baseURL string, client *http.Client) SpaceXService {
 	}
 }
 
-func (s *service) GetLaunchPadForID(ctx context.Context, launchPadID string) (*Launchpad, error) {
+func (s *service) GetLaunchPadForID(ctx context.Context, launchPadID string) (*smodels.Launchpad, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/launchpads", s.baseURL), nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create get request: %w", err)
@@ -51,14 +52,14 @@ func (s *service) GetLaunchPadForID(ctx context.Context, launchPadID string) (*L
 		return nil, err
 	}
 
-	var launchpads []Launchpad
+	var launchpads []smodels.Launchpad
 	err = json.Unmarshal(body, &launchpads)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, pad := range launchpads {
-		if pad.Id == launchPadID {
+		if pad.ID == launchPadID {
 			return &pad, nil
 		}
 	}
@@ -66,19 +67,19 @@ func (s *service) GetLaunchPadForID(ctx context.Context, launchPadID string) (*L
 	return nil, models.ErrNotFoundLaunchpad
 }
 
-func (s *service) GetLaunchesForDate(ctx context.Context, launchPadID string, date time.Time) ([]Launch, error) {
+func (s *service) GetLaunchesForDate(ctx context.Context, launchPadID string, date time.Time) ([]smodels.Launch, error) {
 	startDate := fmt.Sprintf("%sT00:00:00.000Z", date.Format("2006-01-02")) // Start of the day
 	endDate := fmt.Sprintf("%sT23:59:59.999Z", date.Format("2006-01-02"))   // End of the day
 
-	queryRequest := LaunchQueryRequest{
-		Query: LaunchQuery{
+	queryRequest := smodels.LaunchQueryRequest{
+		Query: smodels.LaunchQuery{
 			Launchpad: launchPadID,
-			DateUTC: DateRange{
+			DateUTC: smodels.DateRange{
 				Gte: startDate,
 				Lt:  endDate,
 			},
 		},
-		Options: LaunchQueryOptions{
+		Options: smodels.LaunchQueryOptions{
 			Limit: 5,
 		},
 	}
@@ -109,7 +110,7 @@ func (s *service) GetLaunchesForDate(ctx context.Context, launchPadID string, da
 	}
 
 	var launchesResponse struct {
-		Docs []Launch `json:"docs"`
+		Docs []smodels.Launch `json:"docs"`
 	}
 	err = json.Unmarshal(respBody, &launchesResponse)
 	if err != nil {

@@ -14,7 +14,7 @@ import (
 	reflect "reflect"
 	time "time"
 
-	spacex "github.com/zsoltggs/tabeo-interview/services/bookings/internal/thirdparty/spacex"
+	smodels "github.com/zsoltggs/tabeo-interview/services/bookings/internal/thirdparty/spacex/smodels"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -42,10 +42,10 @@ func (m *MockSpaceXService) EXPECT() *MockSpaceXServiceMockRecorder {
 }
 
 // GetLaunchPadForID mocks base method.
-func (m *MockSpaceXService) GetLaunchPadForID(arg0 context.Context, arg1 string) (*spacex.Launchpad, error) {
+func (m *MockSpaceXService) GetLaunchPadForID(arg0 context.Context, arg1 string) (*smodels.Launchpad, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetLaunchPadForID", arg0, arg1)
-	ret0, _ := ret[0].(*spacex.Launchpad)
+	ret0, _ := ret[0].(*smodels.Launchpad)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -57,10 +57,10 @@ func (mr *MockSpaceXServiceMockRecorder) GetLaunchPadForID(arg0, arg1 any) *gomo
 }
 
 // GetLaunchesForDate mocks base method.
-func (m *MockSpaceXService) GetLaunchesForDate(arg0 context.Context, arg1 string, arg2 time.Time) ([]spacex.Launch, error) {
+func (m *MockSpaceXService) GetLaunchesForDate(arg0 context.Context, arg1 string, arg2 time.Time) ([]smodels.Launch, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetLaunchesForDate", arg0, arg1, arg2)
-	ret0, _ := ret[0].([]spacex.Launch)
+	ret0, _ := ret[0].([]smodels.Launch)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
