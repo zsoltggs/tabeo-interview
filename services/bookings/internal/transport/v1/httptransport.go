@@ -35,11 +35,11 @@ func (h *httpTransport) Serve(httpPort int) error {
 	router.HandleFunc("/health", h.healthSvc.HttpHandler).
 		Methods("GET")
 	router.HandleFunc("/bookings", h.bookingsSvc.ListBookings).
-		Methods("GET") // TODO Set up path params
+		Methods("GET")
 	router.HandleFunc("/bookings", h.bookingsSvc.CreateBooking).
 		Methods("POST")
-	router.HandleFunc("/bookings", h.bookingsSvc.DeleteBooking).
-		Methods("DELETE") // TODO Set up path params
+	router.HandleFunc("/bookings/{booking-id}", h.bookingsSvc.DeleteBooking).
+		Methods("DELETE")
 	h.httpServer.Addr = port
 	h.httpServer.Handler = router
 	go func() {
